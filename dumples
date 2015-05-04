@@ -40,7 +40,8 @@ if ! command -v zcat > /dev/null; then
 	exit 2
 fi
 
-if ! zcat ${DESTINATION}/${DATABASE}-${DATE}.sql.gz | tail -1 | grep "Dump completed.*`date +%Y-%m-%d`" >/dev/null; then
+DATE_COMPLETED=`date +%Y-%m-%d`
+if ! zcat ${DESTINATION}/${DATABASE}-${DATE}.sql.gz | tail -1 | grep "Dump completed.*${DATE_COMPLETED}" >/dev/null; then
 	>&2 echo "There may be a problem with the compressed dump"
 	exit 2
 fi
