@@ -1,0 +1,48 @@
+#!/bin/sh
+
+USERNAME=''
+PASSWORD=''
+DATABASE=''
+DESTINATION=''
+
+if [ ! -w "${DESTINATION}" ]; then
+	>&2 echo "Destination ${DESTINATION} is not accessible for writing"
+	>&2 echo "Aborting..."
+	exit 1
+fi
+
+if ! command -v mysqldump > /dev/null; then
+	>&2 echo "It looks like mysqldump is not available"
+	>&2 echo "Aborting..."
+	exit 1
+fi
+
+if ! command -v gzip > /dev/null; then
+	>&2 echo "It looks like gzip is not available"
+	>&2 echo "Aborting..."
+	exit 1
+fi
+
+DATE=`date +%Y%m%d`
+if ! mysqldump -u ${USERNAME} -p${PASSWORD} ${DATABASE} | gzip > ${DESTINATION}/${DATABASE}-${DATE}.sql.gz; then
+	>&2 echo "Gzip failed"
+	>&2 echo "Aborting..."
+	exit 1
+fi
+
+find ${DESTINATION} -maxdepth 1 -type f -name "${DATABASE}-*.sql.gz" -mtime +14 -execdir rm '{}' \;
+
+#exit 0
+
+if ! command -v zcat > /dev/null; then
+	>&2 echo "It looks like zcat is not available"
+	>&2 echo "Aborting..."
+	exit 2
+fi
+
+if ! zcat ${DESTINATION}/${DATABASE}-${DATE}.sql.gz | tail -1 | grep "Dump completed.*`date +%Y-%m-%d`" >/dev/null; then
+	>&2 echo "There may be a problem with the compressed dump"
+	exit 2
+fi
+
+exit 0
