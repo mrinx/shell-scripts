@@ -2,8 +2,8 @@
 
 USERNAME=''
 PASSWORD=''
-DATABASE=''
-DESTINATION=''
+DATABASE=${1:-''}
+DESTINATION=${2:-''}
 
 if [ ! -w "${DESTINATION}" ]; then
 	>&2 echo "Destination ${DESTINATION} is not accessible for writing"
